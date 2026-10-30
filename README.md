@@ -1,3 +1,5 @@
+![Banner](banner.png)
+
 # File Access Control Analysis Tool: `file-access-control`
 
 ## 1. Overview
