@@ -40,27 +40,28 @@ The tool utilizes a command-line interface driven by `argparse`.  The following 
 **Basic Usage:**
 
 ```bash
-python main.py <target_directory> --recursive --report <output_file>
+python main.py <path> --list-permissions
 ```
 
-* `<target_directory>`: The path to the directory to be analyzed.
-* `--recursive`:  (Optional) Recursively analyzes subdirectories.
-* `<output_file>`: (Optional) Specifies the path to save the analysis report. If omitted, a report will be printed to the console.
+* `<path>`: The path to the file or directory to manage permissions for.
+* `--list-permissions`:  (Optional) List current permissions for the file or directory.
+* `--set-permissions USER PERMISSIONS`: (Optional) Set permissions for a specific user.
+* `--remove-permissions USER`: (Optional) Remove all permissions for a specific user.
 
 
 **Example with Safeguards:**
 
-Analyzing a specific directory with a detailed report generated:
+Listing the current permissions of a specific directory:
 
 ```bash
-python main.py /home/user/sensitive_data --recursive --report sensitive_data_report.txt
+python main.py /home/user/sensitive_data --list-permissions
 ```
 
 **Important Safeguards:**
 
 * Always run the tool with appropriate privileges.  Avoid running with root/administrator privileges unless absolutely necessary.
 * Verify the integrity of the tool's source code before execution.
-* Carefully review the generated reports to identify and address potential vulnerabilities.
+* Carefully review the listed permissions to identify and address potential vulnerabilities.
 
 
 ## 5. Implementation Details (Security Focused)
@@ -77,7 +78,7 @@ python main.py /home/user/sensitive_data --recursive --report sensitive_data_rep
 The tool's core functionality is implemented in `main.py`.
 
 * **`setup_argparse()`:** This function configures the command-line interface using `argparse`.
-* **`main()`:** This function handles command-line argument parsing, performs the file access control analysis, and generates the report.
+* **`main()`:** This function handles command-line argument parsing, performs the file access control analysis, and prints the current permissions.
 
 
 ## 7. License and Compliance Information
