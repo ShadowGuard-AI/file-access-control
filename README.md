@@ -4,17 +4,18 @@
 
 ## 1. Overview
 
-`file-access-control` is a command-line tool designed to analyze and manage file permissions and Access Control Lists (ACLs) to enhance system security.  It focuses on detecting potential vulnerabilities related to improper file access control, ensuring data protection, and validating compliance with security policies.  This tool is primarily intended for security auditing and proactive risk mitigation.
+`file-access-control` is a command-line tool that lists and changes the permission mode of a file or directory. It lists the current octal mode, sets a requested mode with os.chmod, and removes permission bits. It does not manage access control lists, perform compliance checks, or validate permissions against a policy: no such code is in this tool.
 
 
 ## 2. Analysis Purposes
 
 This tool serves the following security analysis purposes:
 
-* **Security Monitoring:**  Identifies files with overly permissive permissions that could be exploited by attackers.
-* **Data Protection:** Helps enforce least privilege by identifying files accessible to users or groups beyond their necessary roles.
-* **System Integrity Checks:** Verifies that file permissions align with established security baselines and configurations.
-* **Compliance Validation:** Assists in meeting regulatory compliance requirements (e.g., HIPAA, GDPR) by ensuring files containing sensitive data have appropriate access restrictions.
+* **Mode listing:** Prints the current octal permission mode of the named path.
+* **Setting a mode:** `--set-permissions USER PERMISSIONS` applies the requested mode. An octal value such as 640 is applied as the full mode; a set of bits such as rwx sets the owner bits. The before and after modes are reported.
+* **Removing permissions:** `--remove-permissions USER` removes permissions. A set of bits such as rw clears those bits from the mode; any other value clears all owner permission bits for the named user. The before and after modes are reported.
+
+A run naming a missing path exits 1. A run naming no operation exits 1 with a line requiring one operation.
 
 ## 3. Installation
 
@@ -66,11 +67,9 @@ python main.py /home/user/sensitive_data --list-permissions
 
 ## 5. Implementation Details (Security Focused)
 
-* **Input Validation:** All user-supplied inputs (directory paths, file names) are rigorously validated to prevent path traversal and other injection attacks.
-* **Error Handling:** Comprehensive error handling is implemented to prevent unexpected crashes and to provide informative error messages.
-* **Logging:** Detailed logging is used for auditing purposes and for troubleshooting.  Log files include timestamps, user actions, and any detected issues.
-* **Least Privilege:** The tool is designed to operate with the minimum necessary privileges, reducing the impact of potential compromises.
-* **Secure File Handling:**  The tool utilizes secure file I/O methods to prevent accidental data corruption or disclosure.
+* **Path check:** The named path must exist; a missing path exits 1.
+* **Mode changes:** Mode changes are made with os.chmod and the before and after modes are logged.
+* **Logging:** Actions and mode changes are logged with timestamps.
 
 
 ## 6. Modules and Core Functions
@@ -81,9 +80,8 @@ The tool's core functionality is implemented in `main.py`.
 * **`main()`:** This function handles command-line argument parsing, performs the file access control analysis, and prints the current permissions.
 
 
-## 7. License and Compliance Information
+## 7. License
 
-**(To be added -  Specify the chosen open-source license and any relevant compliance certifications or statements.)**  For example:
 
 This software is licensed under the MIT License.
 
@@ -95,7 +93,6 @@ Future development will include:
 * More sophisticated reporting capabilities.
 * Support for different operating systems and file systems.
 * Integration with other security tools.
-* Advanced analysis capabilities (e.g., identifying inheritance anomalies in ACLs).
 
 
 This documentation will be updated as the tool evolves.
