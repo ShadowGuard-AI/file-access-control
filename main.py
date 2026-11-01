@@ -32,6 +32,11 @@ def list_permissions(path):
     logging.info(f"Listing permissions for: {path}")
     logging.info(f"Permissions: {oct(_mode(path))}")
 
+# Two grammars, tried in this order. A 3 or 4 digit string of octal digits
+# is a full mode and replaces everything, including the setuid and sticky
+# bits in the 4 digit form. A string of r, w, x letters is owner bits
+# only, merged into the current mode in the branch below. A string like
+# 88 falls through both and is refused, because 8 is not an octal digit.
 def _parse_set_mode(current, permissions):
     p = permissions.strip().lower()
     if p and all(c in '01234567' for c in p) and len(p) in (3, 4):
@@ -41,9 +46,18 @@ def _parse_set_mode(current, permissions):
         if 'r' in p: owner |= stat.S_IRUSR
         if 'w' in p: owner |= stat.S_IWUSR
         if 'x' in p: owner |= stat.S_IXUSR
+        # Only the owner class is replaced. Group and other bits survive a
+        # letter style set, which is the difference between the two grammars
+        # that a caller is most likely to get wrong.
         return (current & ~0o700) | owner
     raise ValueError(f"Permissions must be an octal mode such as 640 or a set of bits such as rwx, got: {permissions}")
 
+# There are no ACLs anywhere in this tool. The user argument is written
+# to the log and nowhere else; the mode lands on the path as a whole,
+# whoever the caller named. The mode is also read back after chmod
+# rather than trusting the computed value, so the log shows what the
+# filesystem actually holds. The return expression at the end always
+# evaluates to True, which is dead logic I am noting, not defending.
 def set_permissions(path, user, permissions):
     before = _mode(path)
     after = _parse_set_mode(before, permissions)
@@ -59,6 +73,10 @@ def remove_permissions(path, user):
     u = user.strip().lower()
     if u and all(c in 'rwx' for c in u):
         clear = 0
+        # When the user argument parses as permission letters, those bits are
+        # cleared from all three classes, owner, group, and other. That is
+        # broader than the wording suggests, and it is the current behaviour:
+        # removing rw by letter removes it for everyone.
         for shift in (6, 3, 0):
             bits = 0
             if 'r' in u: bits |= 4
@@ -83,6 +101,9 @@ def main():
         logging.error(f"The specified path does not exist: {args.path}")
         print(f"Error: path does not exist: {args.path}")
         return 1
+    # The operations are tried in a fixed order and the first one given
+    # wins. Listing returns before a set in the same invocation is applied,
+    # so combining flags does not do both.
     if args.list_permissions:
         list_permissions(args.path)
         return 0
